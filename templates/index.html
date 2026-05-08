@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .container {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            width: 500px;
+            margin: auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        input {
+            width: 75%;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            margin-top: 10px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #22c55e;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #16a34a;
+        }
+
+        .card {
+            margin-top: 20px;
+            padding: 15px;
+            background: #020617;
+            border-radius: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .label {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .signal {
+            margin-top: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .buy { color: #22c55e; }
+        .sell { color: red; }
+
+        canvas {
+            margin-top: 20px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>📊 Stock Trading Dashboard</h2>
+
+    <form action="/predict" method="post" id="form">
+        <input name="ticker" id="tickerInput" placeholder="Enter stock (RELIANCE)" required>
+        <br>
+        <button type="submit">Analyze</button>
+    </form>
+
+    {% if ticker %}
+    <div class="card">
+        <h3>{{ ticker }}</h3>
+
+        <div class="grid">
+            <div>
+                <div class="label">Current Price</div>
+                <div class="value">₹{{ price }}</div>
+            </div>
+
+            <div>
+                <div class="label">Predicted Price</div>
+                <div class="value">₹{{ prediction }}</div>
+            </div>
+        </div>
+
+        <div class="signal {{ 'buy' if signal=='BUY' else 'sell' }}">
+            {{ signal }} SIGNAL
+        </div>
+
+        <!-- RSI -->
+        <div class="card">
+            <div class="label">RSI</div>
+            <div class="value">{{ rsi }}</div>
+
+            <div class="signal 
+                {% if 'BUY' in rsi_signal %}buy
+                {% elif 'SELL' in rsi_signal %}sell
+                {% endif %}">
+                {{ rsi_signal }}
+            </div>
+        </div>
+
+        <!-- MACD -->
+        <div class="card">
+            <div class="label">MACD</div>
+            <div class="value">{{ macd }} / {{ macd_signal }}</div>
+
+            <div class="signal {{ 'buy' if macd_trade=='BUY' else 'sell' }}">
+                {{ macd_trade }} SIGNAL
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- PRICE CHART -->
+    {% if prices %}
+    <div class="card">
+        <h3>📈 Price Chart</h3>
+        <canvas id="priceChart"></canvas>
+    </div>
+
+    <script>
+    new Chart(document.getElementById('priceChart'), {
+        type: 'line',
+        data: {
+            labels: {{ labels | safe }},
+            datasets: [{
+                label: 'Price',
+                data: {{ prices | safe }},
+                borderWidth: 2
+            }]
+        }
+    });
+    </script>
+    {% endif %}
+
+    <!-- RSI CHART -->
+    {% if rsi_data %}
+    <div class="card">
+        <h3>📊 RSI Chart</h3>
+        <canvas id="rsiChart"></canvas>
+    </div>
+
+    <script>
+    new Chart(document.getElementById('rsiChart'), {
+        type: 'line',
+        data: {
+            labels: {{ labels | safe }},
+            datasets: [{
+                label: 'RSI',
+                data: {{ rsi_data | safe }},
+                borderWidth: 2
+            }]
+        },
+        options: {
+            scales: {
+                y: { min: 0, max: 100 }
+            }
+        }
+    });
+    </script>
+    {% endif %}
+
+    <!-- MACD CHART -->
+    {% if macd_data %}
+    <div class="card">
+        <h3>📉 MACD Chart</h3>
+        <canvas id="macdChart"></canvas>
+    </div>
+
+    <script>
+    new Chart(document.getElementById('macdChart'), {
+        type: 'line',
+        data: {
+            labels: {{ labels | safe }},
+            datasets: [
+                {
+                    label: 'MACD',
+                    data: {{ macd_data | safe }},
+                    borderWidth: 2
+                },
+                {
+                    label: 'Signal',
+                    data: {{ signal_data | safe }},
+                    borderWidth: 2
+                }
+            ]
+        }
+    });
+    </script>
+    {% endif %}
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+</div>
+
+<!-- 🔥 AUTO REFRESH -->
+<script>
+setTimeout(() => {
+    location.reload();
+}, 10000);
+</script>
+
+<!-- 🔥 SAVE INPUT -->
+<script>
+document.getElementById("form").addEventListener("submit", function() {
+    localStorage.setItem("ticker", document.getElementById("tickerInput").value);
+});
+
+window.onload = function() {
+    let saved = localStorage.getItem("ticker");
+    if (saved) {
+        document.getElementById("tickerInput").value = saved;
+    }
+};
+</script>
+
+</body>
+</html>
