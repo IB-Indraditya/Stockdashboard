@@ -319,6 +319,36 @@
             }
 
         }
+        /* BLINK EFFECT */
+
+@keyframes blinkPrice {
+
+    0%{
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50%{
+        opacity: 0.2;
+        transform: scale(1);
+    }
+
+    100%{
+        opacity: 1;
+        transform: scale(1);
+    }
+
+}
+
+.blink-price{
+
+    animation: blinkPrice 1s infinite;
+
+    color: #b9eb6e;
+
+    text-shadow: 0 0 1px 1px #cce6f0;
+
+}
 
     </style>
 
@@ -573,6 +603,31 @@
                                 </div>
 
                             </div>
+                            <div class="col-md-2 mb-3">
+
+                                    <select
+                                        id="refreshRate"
+                                        class="form-control">
+
+                                        <option value="1000">
+                                            Update within 1 Sec
+                                        </option>
+
+                                        <option value="2000" selected>
+                                            Update within 2 Sec
+                                        </option>
+
+                                        <option value="5000">
+                                            Update within 5 Sec
+                                        </option>
+
+                                        <option value="10000">
+                                            Update within 10 Sec
+                                        </option>
+
+                                    </select>
+
+                                </div>
 
                         </form>
 
@@ -611,7 +666,7 @@
                                     </div>
 
                                     <div
-                                        class="metric-value"
+                                        class="metric-value blink-price"
                                         id="livePrice">
 
                                         ₹ {{ price }}
@@ -1070,6 +1125,7 @@
                     "livePrice"
                 ).innerHTML =
                     "₹ " + data.price;
+                
 
                 // UPDATE CHART
 
@@ -1154,9 +1210,45 @@
     // AUTO REFRESH
     // =========================
 
-    setInterval(updateLivePrice, 10000);
+    // setInterval(updateLivePrice, 1000);
+    let refreshInterval;
 
-    setInterval(updateSidebar, 15000);
+    // START LIVE UPDATE
+
+    function startLiveUpdate(speed){
+
+        // CLEAR OLD TIMER
+
+        clearInterval(refreshInterval);
+
+        // CREATE NEW TIMER
+
+        refreshInterval = setInterval(() => {
+
+            updateLivePrice();
+
+        }, speed);
+
+    }
+
+    // DEFAULT SPEED
+
+    const defaultSpeed =
+        document.getElementById("refreshRate").value;
+
+    startLiveUpdate(defaultSpeed);
+
+    // USER CHANGE EVENT
+
+    document
+    .getElementById("refreshRate")
+    .addEventListener("change", function(){
+
+        startLiveUpdate(this.value);
+
+    });
+
+        setInterval(updateSidebar, 15000);
 
 </script>
 
