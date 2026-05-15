@@ -609,6 +609,10 @@
                                         id="refreshRate"
                                         class="form-control">
 
+                                        <option value="500">
+                                            Update instant
+                                        </option>
+
                                         <option value="1000">
                                             Update within 1 Sec
                                         </option>
@@ -929,45 +933,151 @@
     // PRICE CHART
     // =========================
 
-    const priceChart = new Chart(
+    // const priceChart = new Chart(
 
-        document.getElementById('priceChart'),
+    //     document.getElementById('priceChart'),
 
-        {
+    //     {
 
-            type: 'line',
+    //         type: 'line',
 
-            data: {
+    //         data: {
 
-                labels: labels,
+    //             labels: labels,
 
-                datasets: [{
+    //             datasets: [{
 
-                    label: 'Stock Price',
+    //                 label: 'Stock Price',
 
-                    data: prices,
+    //                 data: prices,
 
-                    borderColor: '#2563eb',
+    //                 borderColor: '#2563eb',
 
-                    backgroundColor: 'rgba(37,99,235,0.15)',
+    //                 backgroundColor: 'rgba(37,99,235,0.15)',
 
-                    borderWidth: 3,
+    //                 borderWidth: 3,
 
-                    tension: 0.4,
+    //                 tension: 0.4,
 
-                    fill: true,
+    //                 fill: true,
 
-                    pointRadius: 2
+    //                 pointRadius: 2
 
-                }]
+    //             }]
 
-            },
+    //         },
 
-            options: commonOptions
+    //         options: commonOptions
+
+    //     }
+
+    // );
+    const gradient = document
+    .getElementById('priceChart')
+    .getContext('2d')
+    .createLinearGradient(0, 0, 0, 400);
+
+gradient.addColorStop(0, 'rgba(34,197,94,0.25)');
+gradient.addColorStop(0.5, 'rgba(245,158,11,0.15)');
+gradient.addColorStop(1, 'rgba(239,68,68,0.08)');
+
+const priceChart = new Chart(
+
+    document.getElementById('priceChart'),
+
+    {
+
+        type: 'line',
+
+        data: {
+
+            labels: labels,
+
+            datasets: [{
+
+                label: 'Stock Price',
+
+                data: prices,
+
+                borderWidth: 3,
+
+                tension: 0.4,
+
+                fill: true,
+
+                backgroundColor: gradient,
+
+                pointRadius: 2,
+
+                pointHoverRadius: 6,
+
+                pointBackgroundColor: '#ffffff',
+
+                segment: {
+
+                    borderColor: ctx => {
+
+                        const current =
+                            ctx.p1.parsed.y;
+
+                        const previous =
+                            ctx.p0.parsed.y;
+
+                        // GREEN → UP
+
+                        if(current > previous){
+
+                            return '#22c55e';
+
+                        }
+
+                        // RED → DOWN
+
+                        else if(current < previous){
+
+                            return '#ef4444';
+
+                        }
+
+                        // AMBER → CONSTANT
+
+                        else{
+
+                            return 'transparent';
+
+                        }
+
+                    }
+
+                }
+
+            }]
+
+        },
+
+        options: {
+
+            ...commonOptions,
+
+            plugins: {
+
+                legend: {
+
+                    labels: {
+
+                        color: '#7DF9FF'
+
+                    }
+
+                }
+
+            }
 
         }
 
-    );
+    }
+
+);
 
     // =========================
     // RSI CHART
